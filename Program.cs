@@ -17,7 +17,7 @@ class Program
         HttpClient client = new HttpClient();
         client.DefaultRequestHeaders.Add("Authorization", authorizationToken);
 
-        string postData = "{\"idFlow\":1081,\"episodeTicket\":{\"ticketInitials\":\"RECP032\",\"ticketSequence\":1},\"patient\":{\"patientName\":\"Mathaus 01\"}}";
+        string postData = "{\"idFlow\":1081,\"episodeTicket\":{\"ticketInitials\":\"RECP032\",\"ticketSequence\":1},\"patient\":{\"patientName\":\"Mathaus HJ AGR\"}}";
         StringContent content = new StringContent(postData, Encoding.UTF8, "application/json");
 
         string idEpisode = ""; // ID do episódio que deseja evadir
@@ -28,19 +28,14 @@ class Program
             HttpResponseMessage createEpisodeResponse = client.PostAsync(createEpisodeUrl, content).Result;
             string createEpisodeResponseText = await createEpisodeResponse.Content.ReadAsStringAsync();
 
-
             JsonElement episodio = JsonSerializer.Deserialize<JsonElement>(createEpisodeResponseText);
-
             idEpisode = episodio.GetProperty("idEpisode").GetInt32().ToString();
-
         }
         catch (HttpRequestException ex)
         {
             Console.WriteLine("Falha ao criar episódio: " + ex.Message);
             return;
         }
-
-
 
         while (true)
         {
@@ -73,7 +68,7 @@ class Program
                     }
                 }
 
-                Console.WriteLine("Episódio não encontrado na fila de classificação. Aguardando " + waitTimeInSeconds + " segundos...");
+                Console.WriteLine($"Episódio não encontrado na fila de classificação. Aguardando {waitTimeInSeconds} segundos... (ID do Episódio: {idEpisode})");
                 await Task.Delay(waitTimeInSeconds * 1000); // Espera waitTimeInSeconds segundos
             }
             catch (HttpRequestException ex)
