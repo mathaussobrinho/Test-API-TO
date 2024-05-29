@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -9,23 +9,30 @@ class Program
     static async Task Main(string[] args)
     {
         string createEpisodeUrl = "https://api.tolife.app/integration/api/v1/Episode";
-        string classifyQueueUrl = "https://api.tolife.app/integration/api/v1/Episode?location=S&idLocation=56&isCompleted=true";
-        string evictUrl = "https://api.tolife.app/integration/api/v1/Episode/idEpisode/8107202";
+        string classifyQueueUrl = "https://api.tolife.app/integration/api/v1/Episode?location=S&idLocation=57&isCompleted=true";
+        string evictUrl = "https://api.tolife.app/integration/api/v1/Episode/idEpisode/";
         string authorizationToken = "14c31e19-1a49-48c9-ae31-2ebc86927844";
         int waitTimeInSeconds = 30;
 
         HttpClient client = new HttpClient();
         client.DefaultRequestHeaders.Add("Authorization", authorizationToken);
 
-        string postData = "{\"idFlow\":1081,\"episodeTicket\":{\"ticketInitials\":\"RECP032\",\"ticketSequence\":1},\"patient\":{\"patientName\":\"Mathaus cp New\"}}";
+        string postData = "{\"idFlow\":1081,\"episodeTicket\":{\"ticketInitials\":\"RECP032\",\"ticketSequence\":1},\"patient\":{\"patientName\":\"Mathaus 01\"}}";
         StringContent content = new StringContent(postData, Encoding.UTF8, "application/json");
+
+        string idEpisode = ""; // ID do episódio que deseja evadir
 
         try
         {
             // Criar episódio
-            HttpResponseMessage createEpisodeResponse = await client.PostAsync(createEpisodeUrl, content);
+            HttpResponseMessage createEpisodeResponse = client.PostAsync(createEpisodeUrl, content).Result;
             string createEpisodeResponseText = await createEpisodeResponse.Content.ReadAsStringAsync();
-            Console.WriteLine(createEpisodeResponseText);
+
+
+            JsonElement episodio = JsonSerializer.Deserialize<JsonElement>(createEpisodeResponseText);
+
+            idEpisode = episodio.GetProperty("idEpisode").GetInt32().ToString();
+
         }
         catch (HttpRequestException ex)
         {
@@ -33,7 +40,7 @@ class Program
             return;
         }
 
-        string idEpisode = "8107202"; // ID do episódio que deseja evadir
+
 
         while (true)
         {
@@ -52,7 +59,7 @@ class Program
                     string conclusionNote = "Nota de conclusão sobre a evasão do episódio";
                     string evictData = "{\"conclusionNote\":\"" + conclusionNote + "\"}";
                     StringContent evictContent = new StringContent(evictData, Encoding.UTF8, "application/json");
-                    HttpResponseMessage evictResponse = await client.PutAsync(evictUrl, evictContent);
+                    HttpResponseMessage evictResponse = await client.PutAsync(evictUrl + idEpisode, evictContent);
 
                     if (evictResponse.IsSuccessStatusCode)
                     {
