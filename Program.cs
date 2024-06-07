@@ -30,6 +30,7 @@ class Program
 
             JsonElement episodio = JsonSerializer.Deserialize<JsonElement>(createEpisodeResponseText);
             idEpisode = episodio.GetProperty("idEpisode").GetInt32().ToString();
+            Console.WriteLine($"Episódio criado com sucesso. ID: {idEpisode}");
         }
         catch (HttpRequestException ex)
         {
